@@ -407,7 +407,7 @@ void update(bool myPred, bool outcome)
 且當prediction != outcome時misprediction+1
 
 ### 4. getMispred
-```
+```C
 int getMispred()
 {
 	return misprediction;
@@ -417,7 +417,7 @@ int getMispred()
 
 ### Friend
 ### 1. operator<<
-```
+```C
 ostream& operator<<(ostream& output, Predictor pred)
 {
 	output << "(";
@@ -660,3 +660,201 @@ if (regs.size() == 2)//ex:addi R5,R5,1
 判斷register的數量，及是否存在labe來依序呼叫對應的Constructor，
 
 最後再回傳此物件
+
+### C. converInst
+```C
+string converLabel(string input)
+{
+	int k = 1; //去除第一個\t
+	string temp;
+	while (k != input.size())
+		temp.push_back(input[k++]);
+	return temp;
+}
+```
+Ex: input = "\tLoopI"
+
+故要先去除第一個`\t`，
+
+再依序push_back到temp中直到最後一個index，
+
+並回傳temp
+
+### C. addressToIndex
+```C
+int addressToIndex(int a, vector <Instruction>& insts)
+{
+	for (int i = 0; i < insts.size(); i++)
+	{
+		if (a == insts[i].getAddress())
+			return i;
+	}
+}
+```
+當address為a時，其在instructions中的index即為第幾個instruction
+
+### D. addressToIndex
+```C
+int labelToAddress(string l, vector <Label>& labs)
+{
+	for (int i = 0; i < labs.size(); i++)
+	{
+		string temp = labs[i].getName();
+		if (temp == l)
+			return labs[i].getAddress();
+	}
+}
+```
+當Label為l時，找其再labs中的address
+
+### E. stringToint 
+```C
+int stringToint(string s)
+{
+	int sum = 0;
+	int count = 0;
+	int i = s.size() - 1;
+	while (s[i] != 'x')
+	{
+		if(s[i]<='9' && s[i] >='0')
+			sum += pow(16, count++) * (s[i]-'0');
+		else
+		{
+			int temp = s[i] - 'A' + 10;
+			sum += pow(16, count++) * temp;
+		}
+		i--;
+	}
+	return sum;
+}
+```
+將16進位的string轉成int
+
+### F. findRegIndex
+```C
+int findRegIndex(Register* r, vector <Register*> registers)
+{
+	for (int i = 0; i < registers.size(); i++)
+		if (registers[i] == r)
+			return i;
+}
+```
+當register的位置為r時，找到其在regiseters中的位置
+
+### G. isPowerBy2
+```C
+bool isPowerByTwo(int num)
+{
+	return num > 0 && (num & num - 1) == 0;
+}
+```
+因為當n為2的倍數時，在二進位中只有最高的項為一，
+
+而其減一會變成只有最高項是0其餘是1，
+
+故作and時會是0，故可判斷是否為2的次方
+
+## Main Function
+```C
+for (int i = 0; i < 32; i++)//初始化32個pointer to register
+	registers[i] = new Register;
+vector <Instruction> insts;//用來裝所有的instruction
+vector <Label> labs;//用來裝所有的label
+readfile(insts, labs);
+```
+先初始化所有的register，
+
+再建立用來儲存所有instruction合lab的vector，
+
+並讀檔放入insts和labs中
+
+```C
+int num;//用來存放number of entry
+
+cout << "Please input entry(entry > 0):" << endl;
+cin >> num;
+
+if (num <= 0 || !isPowerByTwo(num) ) //大於零且為二的次方
+{
+	cout << "Number of entries is an error!" << endl;
+	system("pause");
+	exit(1);
+}
+vector <Predictor> preds;//用來存放所有的Predictor
+preds.resize(num);
+```
+輸入entry的數量放到num中，
+
+並判斷num是否合法，需大於零且為二的次方，
+
+因為當Index有n個bits時，則有2^n個entry，
+
+故entry不可能不為2的次方，
+
+最後再來建立相對應數量的predictor
+
+```C
+int next = insts[0].getAddress();
+while (next != -1)//下一個不為最後一個label
+{
+	//predictor
+	int entry = (next / 4) % num;//找到為第幾的entry
+	bool predBranch = preds[entry].prediction();//Prediction的結果
+	//instruction
+	int index = addressToIndex(next, insts);//為第幾個instruction
+	bool outcome = insts[index].exection();//執行運算
+	if (outcome)
+	{
+		string nextLabel = insts[index].getLabel();
+		next = labelToAddress(nextLabel, labs);
+	}
+	else
+		next = insts[index + 1].getAddress();
+	cout << "entry: " << entry << "\t\t" << insts[index] << endl;
+	cout << "prediction: ";
+	if (predBranch)
+		cout << "T";
+	else
+		cout << "N";
+	cout << "\t\t";
+	cout << "outcome: ";
+	if (outcome)
+		cout << "T";
+	else
+		cout << "N";
+	cout << endl;
+
+	for (int i = 0; i < preds.size(); i++)
+		cout << i << "." << preds[i] << endl;	
+	preds[entry].update(predBranch, outcome);
+	cout << "misprediciton: " << preds[entry].getMispred() << endl;
+	cout << "------------------------------------------" << endl;
+
+}
+system("pause");
+```
+next為此次要實行的instruction的address
+
+先找到為第幾個entry，為(num/4)%4，
+
+因為instruction為32 bit為4 bytes，
+
+故address都是4的倍數，
+
+最後再對num取餘數即可獲得entry的index，
+
+根據其就可以獲得prediction的結果，
+
+而再根據next可找出為第幾個instruction，
+
+具可以運算出結果來瞭解是否會branch，
+
+若是會branch根據其Label來找到要branch的address，
+
+若是不會branch，next就等於下一個的instruction的位置，
+
+最後在輸出詳細的數據包含此次的entry、prediction和outcome，
+
+在輸出每個prediction的狀態，
+
+最後在輸出misprediction的數量即可
