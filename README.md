@@ -11,6 +11,7 @@ vector <Register*> registers(32);
 
 ## Class
 ### A. Instruction
+--- 
 ### Private:
 ### 1. myReg
 ```c++
@@ -178,7 +179,8 @@ ostream& operator<<(ostream& output, Instruction inst)
 ```
 先判斷Instruction的類型，在輸出其對應的格式
 
-### B.Register
+### B. Register
+--- 
 ### Private
 ### 1. myValue
 ```c
@@ -253,6 +255,7 @@ int getValue()
 回傳myValue
 
 ### C. Label
+--- 
 ### Private
 ### 1. name
 ```c
@@ -294,7 +297,8 @@ string getName()
 ```
 用來回傳Label的名稱
 
-### C. Predictor
+### D. Predictor
+--- 
 ### Private
 ### 1. index
 ```C
@@ -410,3 +414,249 @@ int getMispred()
 }
 ```
 回傳misprediction
+
+### Friend
+### 1. operator<<
+```
+ostream& operator<<(ostream& output, Predictor pred)
+{
+	output << "(";
+	for (int i = 0; i < 3; i++)
+		output << pred.historyBit[i];
+	for (int i = 0; i < 8; i++)
+		output << ", " << pred.state[i];
+	output << ")";
+	return output;
+}
+```
+先輸出historyBit，在輸出每個狀態，並用逗號隔開，且前後為括號
+
+## Function
+### A. readfile
+```C
+void readfile(vector <Instruction>& insts, vector <Label>& labs)
+```
+讀取txt檔，並將內部的instruction放入insts且將label放入到labs中
+```C
+ifstream inFile("input.txt", ios::in);
+if (!inFile)
+{
+	cout << "File could not be opened!!" << endl;
+	exit(1);
+}
+```
+開啟txt檔，並檢查是否有開啟成功
+
+```C
+cin.clear();
+string temp;
+vector <string> input;//用來存讀檔後的每行的string
+while (getline(inFile, temp))
+	input.push_back(temp);
+```
+使用getline的方式來進行讀檔，並放入到input中
+
+```C
+int i = 0;
+while (i < input.size())
+{
+	if (input[i][0] != '\t')//判斷是否不為label
+		insts.push_back(converInst(input[i]));
+	else
+	{
+		if (i != input.size() - 1)//判斷是否不為最後一個label
+		{
+			string n = converLabel(input[i]);//name
+			Label temp(n, insts[insts.size() - 1].getAddress()+4);
+			labs.push_back(temp);
+		}
+		else
+		{
+			string n = converLabel(input[i]);
+			int a = -1;//address
+			Label temp(n, a);//設定最後一個label的位置為-1
+			labs.push_back(temp);
+		}
+	}
+	i++;
+}
+inFile.close();
+```
+若是為Label則開同頭為`\t` ，
+
+若不為Label則呼叫convertInst並push_back到inst中，
+
+則先判斷是否為最後一個Label，因為最後一個Label是沒有具體的位置的
+
+故我們將最後一個Label的位置設為-1，且先呼叫converLabel先將Label傳入n中，
+
+並最後再建一個Label根據n及address，建立一個Label存入labs中，
+
+若不為最後一個Label則一樣先呼叫converLabel取得name，
+
+而其位置是上一個instruction的位置+4，
+
+最後再push_back到labs中
+
+### B. converInst
+```C
+Instruction converInst(string input)
+```
+為將一行的string轉為Instruction
+```c++
+string addressString;//用來存放型態為string的address
+string Operator;
+vector <string> regs;//用來存存放當中全部的register
+string reg; //用來存register的index ex:R8 中的 8
+string imm; //用來存immediate型態為string
+string label; 
+int Address; 
+bool flag = false; //是否為最後一個operand
+int k = 0;  //input的index
+```
+將下面的input作為範例
+Ex: input = "0x110\t\tli R2,0\t\t\t; v=0 addi R2,R0,0"
+```C
+//address
+while (input[k] != '\t')
+	addressString.push_back(input[k++]);
+Address = stringToint(addressString);
+//address和operator之間的兩個\t
+k++;
+k++;
+```
+先處理address，因為先將address放入addressString
+
+在呼叫stringToint將addressString轉成十進位的int
+
+在呼叫k++兩次因為address與operator間隔了兩個`\t`
+
+```C
+//operator
+while (input[k] != ' ')
+	Operator.push_back(input[k++]);
+k++;
+```
+再處理Operator，因為Operator與Operand之間隔一個空格，
+
+所以先到第一個空格間都是Operator，
+
+最後再k++去除那個空格
+
+```C
+//第一個register
+k++;	//去除R
+while (input[k] != ',')
+	reg.push_back(input[k++]);
+regs.push_back(reg);
+reg.clear();
+k++;
+```
+先k++一次去除R8中的R，我們只取其index
+
+因為第一個register與第二個operand之前格一個逗號，
+
+所以在這其中都是register的index，
+
+最後再將其放入regs中，
+
+並將其clear，已達到重複使用
+
+最後再K++去除那個逗號
+
+```C
+//第二個
+if (input[k] == 'R')//為reg
+{
+	k++;	//去除R
+	while (input[k] != ',')
+		reg.push_back(input[k++]);
+	regs.push_back(reg);
+	reg.clear();
+	k++;
+}
+else
+{
+	while (true)
+	{
+		imm.push_back(input[k++]);
+		if (input[k] == '\t')//判斷是否為最後一個
+		{
+			flag = true;
+			break;
+		}
+		if (input[k] == ',')
+		{
+			k++;
+			break;
+		}
+	}
+}
+```
+先判斷是否為register，若是則同上一步的動作，
+
+先找到index，再push_back到regs中，
+
+若不是則為immediate，
+
+故依序push_back到imm中，
+
+再判斷是否為`\t`若是則為最後一個，
+
+因為以`\t`作為結尾，故將flag轉為true，
+
+若是遇到逗號，則代表後續還有operand
+
+```C
+if (!flag)//不為最後一個
+{
+	if (input[k] == 'R')//判斷是否為register
+	{
+		k++; //去除R
+		while (!(input[k] == '\t' || input[k] == ' '))
+			reg.push_back(input[k++]);
+		regs.push_back(reg);
+	}
+	else if ((input[k] <= '9' && input[k] >= '0') || input[k] == '-')//判斷是否為immeditate
+	{
+		while (!(input[k] == '\t' || input[k] == ' '))
+			imm.push_back(input[k++]);
+	}
+	else//為label
+	{
+		while (!(input[k] == '\t' || input[k] == ' '))
+			label.push_back(input[k++]);
+	}
+}
+```
+先判斷最後是否為register，若是則處理方法與前面相同但是結束的條件為`\t`或是' '，
+
+若是為0~9之間或'-'，則為immediate處理方法與前面相同同但是結束的條件為`\t`或是' '，
+
+若都不是則為Label，依樣依序push_back到label中結束的條件為`\t`或是' '
+
+```C
+if (regs.size() == 3)//ex:add R6,R5,R4
+{
+	Instruction temp(Address, Operator, registers[stoi(regs[0])], registers[stoi(regs[1])], registers[stoi(regs[2])]);
+	return temp;
+}
+if (label.size() != 0)//ex:beq R5,R3,EndLoopJ 
+{
+	Instruction temp(Address, Operator, registers[stoi(regs[0])], registers[stoi(regs[1])], label);
+	return temp;
+}
+if (regs.size() == 1)//ex:li R3,16
+{
+	Instruction temp(Address, Operator, registers[stoi(regs[0])], stoi(imm));
+	return temp;
+}
+if (regs.size() == 2)//ex:addi R5,R5,1
+{
+	Instruction temp(Address, Operator, registers[stoi(regs[0])], registers[stoi(regs[1])], stoi(imm));
+	return temp;
+}
+```
+判斷register的數量，及是否存在labe來依序呼叫對應的Constructor，
+
+最後再回傳此物件
