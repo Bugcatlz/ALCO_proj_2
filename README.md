@@ -855,6 +855,8 @@ next為此次要實行的instruction的address
 
 最後在輸出詳細的數據包含此次的entry、prediction和outcome，
 
-在輸出每個prediction的狀態，
+再輸出每個prediction的狀態，
+
+並根據outcome和prediction更新predictor的狀態
 
 最後在輸出misprediction的數量即可
