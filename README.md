@@ -515,6 +515,7 @@ bool flag = false; //是否為最後一個operand
 int k = 0;  //input的index
 ```
 將下面的input作為範例
+
 Ex: input = `0x110\t\tli R2,0\t\t\t; v=0 addi R2,R0,0`
 ```C
 //address
