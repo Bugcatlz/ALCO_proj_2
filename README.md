@@ -57,7 +57,7 @@ Instruction(int address, string myOperator, Register* reg1, Register* reg2, Regi
 ```
 為用來建構一個Instruction包含三個Register的Constructor
 
-Ex: add R6,R5,R4
+Ex: `add R6,R5,R4`
 
 ```C++
 Instruction(int address, string myOperator, Register* reg1, Register* reg2, int imm)
@@ -71,7 +71,7 @@ Instruction(int address, string myOperator, Register* reg1, Register* reg2, int 
 ```
 為用來建構一個Instruction包含二個Register和一個Immediate的Constructor
 
-Ex: addi R5,R5,1
+Ex: `addi R5,R5,1`
 
 ```C++
 Instruction(int address, string myOperator, Register* reg1, int imm)
@@ -85,7 +85,7 @@ Instruction(int address, string myOperator, Register* reg1, int imm)
 
 為用來建構一個Instruction包含一個Register和一個Immediate的Constructor
 
-Ex: li R3,16
+Ex: `li R3,16`
 
 ```C++
 Instruction(int address, string myOperator, Register* reg1, Register* reg2, string label)
@@ -99,7 +99,7 @@ Instruction(int address, string myOperator, Register* reg1, Register* reg2, stri
 ```
 為用來建構一個Instruction包含一個Register和一個Label的Constructor
 
-Ex: beq R5,R3,EndLoopJ
+Ex: `beq R5,R3,EndLoopJ`
 
 #### 2. getAddress
 ```C++
@@ -322,7 +322,7 @@ vector <string> state
 ```
 用來存放preditor的8個2-bit history counter
 
-Ex: WN, SN, ST, SN, SN, SN, SN, SN
+Ex: `WN, SN, ST, SN, SN, SN, SN, SN`
 
 ### 4. misprediction
 ```C
@@ -515,7 +515,7 @@ bool flag = false; //是否為最後一個operand
 int k = 0;  //input的index
 ```
 將下面的input作為範例
-Ex: input = "0x110\t\tli R2,0\t\t\t; v=0 addi R2,R0,0"
+Ex: input = `0x110\t\tli R2,0\t\t\t; v=0 addi R2,R0,0`
 ```C
 //address
 while (input[k] != '\t')
@@ -672,7 +672,7 @@ string converLabel(string input)
 	return temp;
 }
 ```
-Ex: input = "\tLoopI"
+Ex: input = `\tLoopI`
 
 故要先去除第一個`\t`，
 
