@@ -1,7 +1,7 @@
 ALO_proj_2
 === 
 ## Global Variable
-### a. registers
+### A. registers
 ```c++
 vector <Register*> registers(32);
 ```
@@ -46,13 +46,13 @@ string myLabel
 ### 1. Constructor
 ```c++
 Instruction(int address, string myOperator, Register* reg1, Register* reg2, Register* reg3)
-		:myAddress(address),
-		myOperator(myOperator)
-	{
-		myReg.push_back(reg1);
-		myReg.push_back(reg2);
-		myReg.push_back(reg3);
-	}
+	:myAddress(address),
+	myOperator(myOperator)
+{
+	myReg.push_back(reg1);
+	myReg.push_back(reg2);
+	myReg.push_back(reg3);
+}
 ```
 為用來建構一個Instruction包含三個Register的Constructor
 
@@ -60,13 +60,13 @@ Ex: add R6,R5,R4
 
 ```C++
 Instruction(int address, string myOperator, Register* reg1, Register* reg2, int imm)
-		:myAddress(address),
-		myOperator(myOperator),
-		myImmediate(imm)
-	{
-		myReg.push_back(reg1);
-		myReg.push_back(reg2);
-	}
+	:myAddress(address),
+	myOperator(myOperator),
+	myImmediate(imm)
+{
+	myReg.push_back(reg1);
+	myReg.push_back(reg2);
+}
 ```
 為用來建構一個Instruction包含二個Register和一個Immediate的Constructor
 
@@ -74,12 +74,12 @@ Ex: addi R5,R5,1
 
 ```C++
 Instruction(int address, string myOperator, Register* reg1, int imm)
-		:myAddress(address),
-		myOperator(myOperator),
-		myImmediate(imm)
-	{
-		myReg.push_back(reg1);
-	}
+	:myAddress(address),
+	myOperator(myOperator),
+	myImmediate(imm)
+{
+	myReg.push_back(reg1);
+}
 ```
 
 為用來建構一個Instruction包含一個Register和一個Immediate的Constructor
@@ -88,13 +88,13 @@ Ex: li R3,16
 
 ```C++
 Instruction(int address, string myOperator, Register* reg1, Register* reg2, string label)
-		:myAddress(address),
-		myOperator(myOperator),
-		myLabel(label)
-	{
-		myReg.push_back(reg1);
-		myReg.push_back(reg2);
-	}
+	:myAddress(address),
+	myOperator(myOperator),
+	myLabel(label)
+{
+	myReg.push_back(reg1);
+	myReg.push_back(reg2);
+}
 ```
 為用來建構一個Instruction包含一個Register和一個Label的Constructor
 
@@ -103,44 +103,44 @@ Ex: beq R5,R3,EndLoopJ
 #### 2. getAddress
 ```C++
 int getAddress()
-	{
-		return myAddress;
-	}
+{
+	return myAddress;
+}
 ```
 回傳這個Instruction的address
 
 ### 3. exection
 ```c++
 bool exection()
+{
+	if (myOperator == "li")
 	{
-		if (myOperator == "li")
-		{
-			*myReg[0] = myImmediate;
-		}
-		else if (myOperator == "add")
-		{
-			*myReg[0] = *myReg[1] + *myReg[2];
-		}
-		else if (myOperator == "addi")
-		{
-			*myReg[0] = *myReg[1] + myImmediate;
-		}
-		else if (myOperator == "beq")
-		{
-			if (*myReg[0] == *myReg[1])
-				return true;
-		}
-		else if (myOperator == "bne")
-		{
-			if (*myReg[0] != *myReg[1])
-				return true;
-		}
-		else if (myOperator == "andi")
-		{
-			*myReg[0] = myReg[1]->getValue() & myImmediate;
-		}
-		return false;
+		*myReg[0] = myImmediate;
 	}
+	else if (myOperator == "add")
+	{
+		*myReg[0] = *myReg[1] + *myReg[2];
+	}
+	else if (myOperator == "addi")
+	{
+		*myReg[0] = *myReg[1] + myImmediate;
+	}
+	else if (myOperator == "beq")
+	{
+		if (*myReg[0] == *myReg[1])
+			return true;
+	}
+	else if (myOperator == "bne")
+	{
+		if (*myReg[0] != *myReg[1])
+			return true;
+	}
+	else if (myOperator == "andi")
+	{
+		*myReg[0] = myReg[1]->getValue() & myImmediate;
+	}
+	return false;
+}
 ```
 判斷當myOperator為特定的Operator時，
 
@@ -175,3 +175,78 @@ ostream& operator<<(ostream& output, Instruction inst)
 	return output;
 }
 ```
+
+### B.Register
+### Private
+### 1. myValue
+```c
+int myValue;
+```
+用來記錄Register內的值
+### Public
+### 1. Constructor
+```c
+Register()
+	:myValue()
+{}
+```
+初始化myValue
+
+### 2. operator=
+```
+int& operator=(int value)
+{
+	myValue = value;
+	return myValue;
+}
+```
+將傳入的型態為int的值傳給myValue
+
+並回傳myValue
+
+### 3. operator+
+```c++
+int& operator+(int value)
+{
+	int v = myValue + value;
+	return v;
+}
+```
+將傳入型態為int的值加上myValue，並回傳
+
+```c++
+int& operator+(Register r)
+{
+	int v = myValue + r.myValue;
+	return v;
+}
+```
+將傳入的Register其myValue加上自身的myValue，並回傳
+
+### 4. operator==
+```c
+bool operator==(Register r)
+{
+	return (myValue == r.myValue);
+}
+```
+如是傳入的Register的myValue等於自身的myValue則回傳true，反之亦然
+
+### 5. operator!=
+```c
+bool operator!=(Register r)
+{
+	return (myValue != r.myValue);
+}
+```
+如是傳入的Register的myValue不等於自身的myValue則回傳true，反之亦然
+
+### 6. getValue
+```c
+int getValue()
+{
+	return myValue;
+}
+```
+回傳myValue
+
