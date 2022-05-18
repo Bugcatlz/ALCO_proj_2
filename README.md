@@ -482,7 +482,7 @@ while (i < input.size())
 }
 inFile.close();
 ```
-若是為Label則開同頭為`\t` ，
+若是為Label則開頭為`'\t'` ，
 
 若不為Label則呼叫convertInst並push_back到inst中，
 
