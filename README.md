@@ -694,7 +694,7 @@ int addressToIndex(int a, vector <Instruction>& insts)
 ```
 當address為a時，其在instructions中的index即為第幾個instruction
 
-### D. addressToIndex
+### D. labelToAddress
 ```C
 int labelToAddress(string l, vector <Label>& labs)
 {
